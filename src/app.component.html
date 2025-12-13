@@ -1,0 +1,272 @@
+<!-- Header -->
+<header class="sticky top-0 z-50 glass-panel border-b border-slate-200 dark:border-slate-700/50 px-4 py-4 flex justify-between items-center shadow-sm">
+  <div class="flex items-center gap-2">
+    <span class="material-icons-round text-primary text-2xl">point_of_sale</span>
+    <h1 class="text-lg font-bold tracking-wide uppercase bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+      Cierre de Caja
+    </h1>
+  </div>
+  <button class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" onclick="document.documentElement.classList.toggle('dark')">
+    <span class="material-icons-round dark:hidden">dark_mode</span>
+    <span class="material-icons-round hidden dark:block text-yellow-400">light_mode</span>
+  </button>
+</header>
+
+<form onsubmit="return false;">
+  <main class="container mx-auto max-w-6xl px-4 py-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+      
+      <!-- Left Column: Inputs -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Shift Details Card -->
+        <section class="glass-panel p-5 rounded-2xl border border-slate-200 dark:border-slate-700/50 shadow-lg">
+          <h2 class="text-lg font-semibold mb-4 text-slate-700 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700 pb-2">
+            Detalles del Turno
+          </h2>
+          <div class="grid gap-4 md:grid-cols-2">
+            <div>
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 ml-1">Tu Nombre</label>
+              <input [value]="closerName()" (keyup)="onNameKeyup($event)" class="w-full glass-input border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder-slate-400 dark:placeholder-slate-500" placeholder="Ej: Juan Pérez" type="text" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 ml-1">Turno</label>
+              <div class="relative">
+                <select [value]="shift()" (change)="onShiftChange($event)" class="w-full glass-input border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none appearance-none transition-all">
+                  <option value="mañana">Turno Mañana</option>
+                  <option value="tarde">Turno Tarde</option>
+                </select>
+                <span class="material-icons-round absolute right-3 top-3 pointer-events-none text-slate-400">expand_more</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Digital Incomes Card -->
+        <section class="glass-panel p-5 rounded-2xl border border-sky-100 dark:border-slate-700/50 shadow-lg relative overflow-hidden">
+          <div class="absolute -top-10 -right-10 w-32 h-32 bg-sky-400/10 dark:bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div class="flex justify-between items-center mb-4 border-b border-sky-100 dark:border-slate-700 pb-2">
+            <div class="flex items-center gap-2">
+              <span class="material-icons-round text-sky-500">credit_card</span>
+              <h2 class="text-lg font-semibold text-sky-700 dark:text-sky-300">Ingresos Digitales</h2>
+            </div>
+            <div class="bg-sky-50 dark:bg-sky-500/10 px-3 py-1 rounded-full border border-sky-100 dark:border-sky-500/20">
+              <span class="text-xs font-medium text-sky-600 dark:text-sky-400">Subtotal: {{ digitalIncomeSubtotal() | currency:'$':'symbol':'1.2-2' }}</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="col-span-1">
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 ml-1">First Data ($)</label>
+              <input [value]="firstDataIncome() ?? ''" (keyup)="onFirstDataKeyup($event)" class="w-full glass-input border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none text-right font-mono" placeholder="0.00" type="number" />
+            </div>
+            <div class="col-span-1">
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 ml-1">PedidosYa ($)</label>
+              <input [value]="pedidosYaIncome() ?? ''" (keyup)="onPedidosYaKeyup($event)" class="w-full glass-input border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none text-right font-mono" placeholder="0.00" type="number" />
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 ml-1">Mercado Pago ($)</label>
+              <input [value]="mercadoPagoIncome() ?? ''" (keyup)="onMercadoPagoKeyup($event)" class="w-full glass-input border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none text-right font-mono" placeholder="0.00" type="number" />
+            </div>
+          </div>
+        </section>
+
+        <!-- Cash Card -->
+        <section class="glass-panel p-5 rounded-2xl border border-emerald-100 dark:border-slate-700/50 shadow-lg relative overflow-hidden">
+          <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-emerald-400/10 dark:bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div class="flex justify-between items-center mb-4 border-b border-emerald-100 dark:border-slate-700 pb-2">
+            <div class="flex items-center gap-2">
+              <span class="material-icons-round text-emerald-500">payments</span>
+              <h2 class="text-lg font-semibold text-emerald-700 dark:text-emerald-300">Ingreso en Efectivo</h2>
+            </div>
+            <div class="bg-emerald-50 dark:bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-100 dark:border-emerald-500/20">
+              <span class="text-xs font-medium text-emerald-600 dark:text-emerald-400">Subtotal: {{ cashSubtotal() | currency:'$':'symbol':'1.2-2' }}</span>
+            </div>
+          </div>
+          <div class="space-y-3">
+            @for (entry of cashEntries(); track trackByIndex($index, entry); let i = $index) {
+            <div class="flex items-center gap-2">
+              <div class="w-1/3 relative">
+                <span class="absolute left-3 top-2.5 text-xs text-slate-400">$</span>
+                <input (keyup)="onCashEntryKeyup(i, 'denomination', $event)" [value]="entry.denomination ?? ''" class="w-full glass-input border border-slate-300 dark:border-slate-600 rounded-lg pl-6 pr-2 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-right font-mono" placeholder="Valor" type="number" />
+              </div>
+              <span class="text-slate-400 text-xs">X</span>
+              <div class="flex-1">
+                <input (keyup)="onCashEntryKeyup(i, 'quantity', $event)" [value]="entry.quantity ?? ''" class="w-full glass-input border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none" placeholder="Cantidad" type="number" />
+              </div>
+              <button (click)="removeCashEntry(i)" class="p-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/40 border border-red-200 dark:border-red-900/50 transition-colors">
+                <span class="material-icons-round text-lg leading-none">remove</span>
+              </button>
+            </div>
+            }
+          </div>
+          <button (click)="addCashEntry()" class="w-full mt-4 py-2 border border-dashed border-emerald-300 dark:border-emerald-700 text-emerald-600 dark:text-emerald-400 rounded-lg text-sm font-medium hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors flex items-center justify-center gap-2">
+            <span class="material-icons-round text-sm">add</span>
+            Añadir Denominación
+          </button>
+        </section>
+        
+        <!-- Expenses Card -->
+        <section class="glass-panel p-5 rounded-2xl border border-red-100 dark:border-slate-700/50 shadow-lg relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-40 h-40 bg-red-400/10 dark:bg-red-500/10 rounded-full blur-3xl pointer-events-none transform translate-x-10 -translate-y-10"></div>
+          <div class="flex justify-between items-center mb-4 border-b border-red-100 dark:border-slate-700 pb-2">
+            <div class="flex items-center gap-2">
+              <span class="material-icons-round text-red-500">shopping_bag</span>
+              <h2 class="text-lg font-semibold text-red-700 dark:text-red-300">Gastos</h2>
+            </div>
+            <div class="bg-red-50 dark:bg-red-500/10 px-3 py-1 rounded-full border border-red-100 dark:border-red-500/20">
+              <span class="text-xs font-medium text-red-600 dark:text-red-400">Subtotal: {{ expensesSubtotal() | currency:'$':'symbol':'1.2-2' }}</span>
+            </div>
+          </div>
+          <div class="space-y-3">
+            @for (expense of expenses(); track trackByIndex($index, expense); let i = $index) {
+              <div class="flex items-center gap-2">
+                <input (keyup)="onExpenseDetailKeyup(i, $event)" [value]="expense.detail" class="flex-1 w-full glass-input border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none" placeholder="Detalle del gasto" type="text" />
+                <input (keyup)="onExpenseAmountKeyup(i, $event)" [value]="expense.amount ?? ''" class="w-1/3 glass-input border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none text-right font-mono" placeholder="Monto" type="number" />
+                @if (expenses().length > 1) {
+                  <button (click)="removeExpense(i)" class="p-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/40 border border-red-200 dark:border-red-900/50 transition-colors">
+                    <span class="material-icons-round text-lg leading-none">remove</span>
+                  </button>
+                }
+              </div>
+            }
+          </div>
+          <button (click)="addExpense()" class="w-full mt-4 py-2 border border-dashed border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center justify-center gap-2">
+            <span class="material-icons-round text-sm">add</span>
+            Añadir Gasto
+          </button>
+        </section>
+      </div>
+
+      <!-- Right Column: Summary & Submit -->
+      <div class="lg:col-span-1">
+        <div class="lg:sticky lg:top-24 space-y-6">
+            <!-- Final Summary Card -->
+            <section class="glass-panel p-6 rounded-2xl border border-slate-200 dark:border-slate-700/50 shadow-xl bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900">
+              <h2 class="text-lg font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+                <span class="material-icons-round text-slate-400">summarize</span>
+                Resumen Final
+              </h2>
+              <div class="space-y-3 mb-6">
+                <div class="flex justify-between items-center text-sm p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <span class="text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-gradient-to-r from-sky-400 to-emerald-400"></div>
+                    Total Ingresos
+                  </span>
+                  <span class="font-mono font-semibold bg-clip-text text-transparent bg-gradient-to-r from-sky-500 to-emerald-500">{{ totalIncome() | currency:'$':'symbol':'1.2-2' }}</span>
+                </div>
+                <div class="flex justify-between items-center text-sm p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <span class="text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-red-500"></div>
+                    Total Gastos
+                  </span>
+                  <span class="font-mono font-semibold text-red-500">{{ expensesSubtotal() | currency:'$':'symbol':'1.2-2' }}</span>
+                </div>
+                
+                <div class="h-px bg-slate-200 dark:bg-slate-700 my-2"></div>
+                
+                <div class="flex justify-between items-center px-2">
+                  <span class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Neto</span>
+                  <span class="font-mono text-lg font-semibold text-slate-600 dark:text-slate-300">{{ netTotal() | currency:'$':'symbol':'1.2-2' }}</span>
+                </div>
+                <div class="flex justify-between items-center px-2">
+                  <span class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Absoluto</span>
+                  <span class="font-mono text-lg font-semibold text-slate-600 dark:text-slate-300">{{ absoluteTotal() | currency:'$':'symbol':'1.2-2' }}</span>
+                </div>
+                
+                <div class="h-px bg-slate-200 dark:bg-slate-700 my-2"></div>
+
+                <div class="flex justify-between items-center p-2">
+                  <span class="text-slate-600 dark:text-slate-300 font-bold">Resumen diario</span>
+                  <input (keyup)="onDailySummaryKeyup($event)" [value]="dailySummary() ?? ''" class="w-2/5 glass-input border border-slate-300 dark:border-slate-600 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-right font-mono" placeholder="0.00" type="number" />
+                </div>
+                 <div class="flex justify-between items-center p-2">
+                  <span class="text-slate-600 dark:text-slate-300 font-bold">Diferencia</span>
+                  <span class="font-mono text-xl font-bold" 
+                    [class.text-red-500]="difference() < 0"
+                    [class.text-emerald-500]="difference() > 0"
+                    [class.text-slate-800]="difference() === 0"
+                    [class.dark:text-white]="difference() === 0">
+                    {{ difference() | currency:'$':'symbol':'1.2-2' }}
+                  </span>
+                </div>
+              </div>
+            </section>
+
+            <!-- Submit Button -->
+            <button (click)="submitForm()" class="w-full shadow-2xl shadow-primary/30 bg-gradient-to-r from-primary to-purple-600 hover:to-purple-500 text-white font-bold py-4 px-6 rounded-2xl transform active:scale-95 transition-all duration-200 flex items-center justify-center gap-2">
+              <span class="material-icons-round">check_circle</span>
+              Finalizar y Registrar Cierre
+            </button>
+            
+            <!-- Webhook Status Box -->
+            @if (webhookStatus() !== 'idle') {
+              <div class="p-4 rounded-xl text-sm font-medium flex items-center justify-center gap-3 transition-all glass-panel"
+                  [class.border]="webhookStatus() !== 'sending'"
+                  [class.border-emerald-200]="webhookStatus() === 'success'" [class.dark:border-emerald-900]="webhookStatus() === 'success'"
+                  [class.text-emerald-700]="webhookStatus() === 'success'" [class.dark:text-emerald-300]="webhookStatus() === 'success'"
+                  [class.border-red-200]="webhookStatus() === 'error'" [class.dark:border-red-900]="webhookStatus() === 'error'"
+                  [class.text-red-700]="webhookStatus() === 'error'" [class.dark:text-red-300]="webhookStatus() === 'error'">
+                @switch (webhookStatus()) {
+                  @case ('sending') {
+                    <svg class="animate-spin h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="text-slate-600 dark:text-slate-300">Enviando datos...</span>
+                  }
+                  @case ('success') {
+                    <span class="material-icons-round">check_circle</span>
+                    <span>Cierre registrado exitosamente.</span>
+                  }
+                  @case ('error') {
+                    <span class="material-icons-round">error</span>
+                    <span>{{ webhookError() }}</span>
+                  }
+                }
+              </div>
+            }
+        </div>
+      </div>
+      
+      <!-- Log History -->
+      @if (logHistory().length > 0) {
+        <section class="lg:col-span-3 glass-panel p-5 rounded-2xl border border-slate-200 dark:border-slate-700/50 shadow-lg">
+          <h2 class="text-lg font-semibold text-slate-700 dark:text-slate-200 border-b border-slate-200 dark:border-slate-700 pb-2 mb-4 flex items-center gap-2">
+              <span class="material-icons-round text-slate-400">history</span>
+              Historial de Movimientos
+          </h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="text-xs text-slate-500 dark:text-slate-400 uppercase">
+                <tr>
+                  <th class="p-2 font-semibold">Fecha</th>
+                  <th class="p-2 font-semibold">Nombre</th>
+                  <th class="p-2 font-semibold">Concepto</th>
+                  <th class="p-2 font-semibold text-right">Monto</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (entry of logHistory(); track trackByIndex($index, entry)) {
+                  <tr class="border-b border-slate-200/50 dark:border-slate-700/50">
+                    <td class="p-2 whitespace-nowrap text-slate-500">{{ entry.day }}</td>
+                    <td class="p-2 text-slate-600 dark:text-slate-300">{{ entry.closerName }}</td>
+                    <td class="p-2 text-slate-600 dark:text-slate-300">{{ entry.accountEntry }}</td>
+                    <td class="p-2 text-right font-mono" [class.text-emerald-500]="entry.amount >= 0" [class.text-red-500]="entry.amount < 0">
+                      {{ entry.amount | currency:'$':'symbol-narrow':'1.2-2' }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
+    </div>
+  </main>
+</form>
+
+<!-- Decorative Background Blobs -->
+<div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+  <div class="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 dark:bg-primary/10 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+  <div class="absolute top-0 right-1/4 w-96 h-96 bg-secondary/20 dark:bg-secondary/10 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+  <div class="absolute -bottom-8 left-1/2 w-96 h-96 bg-pink-300/20 dark:bg-pink-900/10 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+</div>

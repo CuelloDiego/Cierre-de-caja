@@ -1,0 +1,5 @@
+{
+  "name": "CM cierre de caja 2",
+  "description": "An application for managing and logging the end-of-shift cash closing process for a coffee store. It allows users to input various income sources, cash denominations, and expenses, calculating a final net total and logging each transaction.",
+  "requestFramePermissions": []
+}
